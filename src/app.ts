@@ -26,7 +26,7 @@ class App {
   }
 
   public async listen() {
-    await attachAdminJS(this.app);
+    // await attachAdminJS(this.app);
     this.app.listen(this.port, () => {
       logger.info(`=================================`);
       logger.info(`======= ENV: ${this.env} =======`);
