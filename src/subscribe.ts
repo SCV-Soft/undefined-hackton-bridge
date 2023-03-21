@@ -49,7 +49,7 @@ async function handle_deposit(
   let bridgeAddress;
   let bridgeTokenAddress;
   // 컨트랙트 상에서 fromChainId != toChainId 보장
-  switch (_toChainId) {
+  switch (_toChainId.toString()) {
     case KLAYTN_CHAIN_ID:
       provider = new ethers.providers.JsonRpcProvider(KLAYTN_JSONRPC);
       bridgeAddress = KLAYTN_BRIDGE_ADDRESS;
@@ -82,10 +82,10 @@ async function handle_deposit(
   // 상대 체인으로 보낸다.
   // 일단은 무조건 상대 체인으로 가정 (클튼 <-> 콘). 추후 설정파일로 매핑
 
-  const wallet = new ethers.Wallet(PK, provider);
-  const bridge = new ethers.Contract(bridgeAddress, BRIDGE_ABI, wallet);
-
   try {
+    const wallet = new ethers.Wallet(PK, provider);
+    const bridge = new ethers.Contract(bridgeAddress, BRIDGE_ABI, wallet);
+
     // let gasPrice = await getBaseGas();
     const tx = await bridge.withdraw(
       bridgeTokenAddress,
