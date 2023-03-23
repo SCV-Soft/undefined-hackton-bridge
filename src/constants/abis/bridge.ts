@@ -201,11 +201,6 @@ export default [
         name: "_nonce",
         type: "uint256",
       },
-      {
-        internalType: "bytes",
-        name: "_sig",
-        type: "bytes",
-      },
     ],
     name: "deposit",
     outputs: [],
