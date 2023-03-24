@@ -102,8 +102,7 @@ async function handle_deposit(
 
     await tx.wait();
   } catch (e) {
-    console.error(e);
-    if (e?.message.startsWith("txpool is full")) {
+    if (e?.body?.includes("txpool is full")) {
       console.log("txpool is full, retry!");
       // 실패시 재호출
       handle_deposit(_token, _fromChainId, _toChainId, _amount, _from, _to, _nonce, event);
