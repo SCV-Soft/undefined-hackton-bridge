@@ -10,6 +10,6 @@ try {
   console.log(e);
 }
 
-const app = new App([new IndexRoute()]);
+// const app = new App([new IndexRoute()]);
 
-app.listen();
+// app.listen();
