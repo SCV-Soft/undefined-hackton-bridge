@@ -2,22 +2,22 @@ import BRIDGE_ABI from "@/constants/abis/bridge";
 import { ethers } from "ethers";
 
 const PK = process.env.ADMIN_PK;
-const KLAYTN_JSONRPC = process.env.KLAYTN_JSONRPC;
-const KON_JSONRPC = process.env.KON_JSONRPC;
+const L1_JSONRPC = process.env.L1_JSONRPC;
+const L2_JSONRPC = process.env.L2_JSONRPC;
 
-const KLAYTN_BRIDGE_ADDRESS = process.env.KLAYTN_BRIDGE_ADDRESS;
-const KON_BRIDGE_ADDRESS = process.env.KON_BRIDGE_ADDRESS;
+const L1_BRIDGE_ADDRESS = process.env.L1_BRIDGE_ADDRESS;
+const L2_BRIDGE_ADDRESS = process.env.L2_BRIDGE_ADDRESS;
 
-const KLAYTN_CHAIN_ID = process.env.KLAYTN_CHAIN_ID;
-const KON_CHAIN_ID = process.env.KON_CHAIN_ID;
+const L1_CHAIN_ID = process.env.L1_CHAIN_ID;
+const L2_CHAIN_ID = process.env.L2_CHAIN_ID;
 
-const KLAYTN_TOKEN_ADDRESS = process.env.KLAYTN_TOKEN_ADDRESS;
-const KON_TOKEN_ADDRESS = process.env.KON_TOKEN_ADDRESS;
+const L1_TOKEN_ADDRESS = process.env.L1_TOKEN_ADDRESS;
+const L2_TOKEN_ADDRESS = process.env.L2_TOKEN_ADDRESS;
 
 async function subscribe() {
   // 체인별로 등록
-  subscribe_contract(PK, KLAYTN_JSONRPC, KLAYTN_BRIDGE_ADDRESS, BRIDGE_ABI, "Deposit", handle_deposit);
-  subscribe_contract(PK, KON_JSONRPC, KON_BRIDGE_ADDRESS, BRIDGE_ABI, "Deposit", handle_deposit);
+  subscribe_contract(PK, L1_JSONRPC, L1_BRIDGE_ADDRESS, BRIDGE_ABI, "Deposit", handle_deposit);
+  subscribe_contract(PK, L2_JSONRPC, L2_BRIDGE_ADDRESS, BRIDGE_ABI, "Deposit", handle_deposit);
 }
 
 function subscribe_contract(
@@ -50,28 +50,28 @@ async function handle_deposit(
   let bridgeTokenAddress;
   // 컨트랙트 상에서 fromChainId != toChainId 보장
   switch (_toChainId.toString()) {
-    case KLAYTN_CHAIN_ID:
-      provider = new ethers.providers.JsonRpcProvider(KLAYTN_JSONRPC);
-      bridgeAddress = KLAYTN_BRIDGE_ADDRESS;
+    case L1_CHAIN_ID:
+      provider = new ethers.providers.JsonRpcProvider(L1_JSONRPC);
+      bridgeAddress = L1_BRIDGE_ADDRESS;
 
-      // KON 이외의 토큰에 대한 deposit은 무시
-      if (_token != KON_TOKEN_ADDRESS) {
+      // L2 이외의 토큰에 대한 deposit은 무시
+      if (_token != L2_TOKEN_ADDRESS) {
         return;
       }
 
-      bridgeTokenAddress = KLAYTN_TOKEN_ADDRESS;
+      bridgeTokenAddress = L1_TOKEN_ADDRESS;
 
       break;
-    case KON_CHAIN_ID:
-      provider = new ethers.providers.JsonRpcProvider(KON_JSONRPC);
-      bridgeAddress = KON_BRIDGE_ADDRESS;
+    case L2_CHAIN_ID:
+      provider = new ethers.providers.JsonRpcProvider(L2_JSONRPC);
+      bridgeAddress = L2_BRIDGE_ADDRESS;
 
-      // KON 이외의 토큰에 대한 deposit은 무시
-      if (_token != KLAYTN_TOKEN_ADDRESS) {
+      // L2 이외의 토큰에 대한 deposit은 무시
+      if (_token != L1_TOKEN_ADDRESS) {
         return;
       }
 
-      bridgeTokenAddress = KON_TOKEN_ADDRESS;
+      bridgeTokenAddress = L2_TOKEN_ADDRESS;
 
       break;
     default:
@@ -80,7 +80,7 @@ async function handle_deposit(
   }
 
   // 상대 체인으로 보낸다.
-  // 일단은 무조건 상대 체인으로 가정 (클튼 <-> 콘). 추후 설정파일로 매핑
+  // 일단은 무조건 상대 체인으로 가정 (L1 <-> L2). 추후 설정파일로 매핑
 
   try {
     const wallet = new ethers.Wallet(PK, provider);
@@ -102,11 +102,12 @@ async function handle_deposit(
 
     await tx.wait();
   } catch (e) {
-    if (e?.body?.includes("txpool is full")) {
-      console.log("txpool is full, retry!");
-      // 실패시 재호출
-      handle_deposit(_token, _fromChainId, _toChainId, _amount, _from, _to, _nonce, event);
-    }
+    console.log(e);
+    // if (e?.body?.includes("txpool is full")) {
+    //   console.log("txpool is full, retry!");
+    //   // 실패시 재호출
+    //   handle_deposit(_token, _fromChainId, _toChainId, _amount, _from, _to, _nonce, event);
+    // }
   }
 }
 
